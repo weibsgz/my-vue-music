@@ -49,6 +49,12 @@
           this.slider.refresh();
        })
      },
+     //确保slider不被keep-alive的时候仍然能清除timer 老师改的issue
+     activated() {
+       if (this.autoPlay) {
+         this._play()
+       }
+     },
      //组件切换的时候 销毁定时器
      destoryed(){
        clearTimeout(this.timer)

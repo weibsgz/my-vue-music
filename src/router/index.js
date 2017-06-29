@@ -47,7 +47,13 @@ export default new Router({
     },
     {
       path: '/search',
-      component: Search
+      component: Search,
+      children:[
+          {
+            path:':id',  //根据id不同区分歌手
+            component:SingerDetail
+          }
+        ]
     },
   ]
 })

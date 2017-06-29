@@ -16,8 +16,9 @@
         </div>        
     </div>    
     <div class="search-result" v-show="query">
-            <Suggest :query='query'></Suggest>
-        </div>
+            <Suggest :query='query' @listScroll="blurInput" @select="saveSearch"></Suggest>
+    </div>
+    <router-view></router-view>
   </div>
 </template>
 
@@ -26,6 +27,7 @@
     import {getHotKey} from 'api/search'
     import {ERR_OK} from 'api/config'
     import Suggest from 'components/suggest/suggest'
+    import {mapActions} from 'vuex'
     export default {
         created(){
             this._getHotKey();
@@ -41,7 +43,10 @@
                 query:''
             }
         },
-        methods:{
+        methods:{    
+            ...mapActions([
+                'saveSearchHistory'
+            ]),       
             _getHotKey(){
                 getHotKey().then((res) =>{
                     if(res.code === ERR_OK){
@@ -55,6 +60,16 @@
             },
             onQueryChange(query){
                 this.query = query
+            },
+            blurInput(){
+                //这个方法要让search-box里的input 失去焦点，因为输入搜索条件后软键盘出来了
+                //这个时候滑动列表要收起键盘  从scroll组件派发 到suggest组件 再派发到这里
+
+                this.$refs.searchBox.blur()
+            },
+            saveSearch(){
+                //保存查找历史
+               this.saveSearchHistory(this.query)
             }
         },
         components:{

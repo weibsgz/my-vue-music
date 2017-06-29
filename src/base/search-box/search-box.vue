@@ -7,6 +7,7 @@
 </template>
 
 <script >
+    import {debounce} from 'common/js/util'
     export default{
         props:{
             placeholder:{
@@ -25,13 +26,16 @@
             },
             setQuery(query){
                 this.query = query
+            },
+            blur(){
+                this.$refs.query.blur()
             }
         },
-        //这里watch query的变化 向上派发出去
+        //这里watch query的变化 向上派发出去 200毫秒内的输入不发送请求
         created(){
-            this.$watch('query',(newquery) => {
+            this.$watch('query',debounce((newquery) => {
                 this.$emit('query',newquery)
-            })
+            },200))
         }
     }
 </script>

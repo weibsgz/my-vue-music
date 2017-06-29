@@ -23,6 +23,14 @@ export default {
     listenScroll:{
       type:Boolean,
       default:false
+    },
+    pullUp:{
+      type:Boolean,
+      default:false
+    },
+    beforeScroll:{
+      type:Boolean,
+      default:false
     }
   },
   mounted(){
@@ -51,6 +59,22 @@ export default {
         let me = this;
         this.scroll.on('scroll',(pos) =>{
           me.$emit('scroll',pos)
+        })
+      }
+      //上拉加载
+      if(this.pullUp){       
+        this.scroll.on('scrollEnd',()=>{
+          console.log(this.scroll)
+          if(this.scroll.y <= this.scroll.maxScrollY + 50){
+            console.log('scroll组件派发scrollToEnd方法')
+            this.$emit('scorllToEnd')
+          }
+        })
+      }
+      //滚动开始前，这里为了处理滚动前让遮挡的键盘消失的问题
+      if(this.beforeScroll){
+        this.scroll.on('beforeScrollStart',()=>{
+          this.$emit('beforeScroll')
         })
       }
     },

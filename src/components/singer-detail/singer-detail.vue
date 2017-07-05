@@ -78,10 +78,14 @@
   //   bottom:0;
   //   background: @color-background;
   // }
+
+  //动画说明 ： 第一帧slider-enter进入后1帧后马上消除 然后进入slide-enter-active
+  //这样就是瞬间在右边马上过度0.3秒回到原来的位置
+  //路由返回的时候 slide-leave-to是最后的结束状态 之前是slide-leave-active 
   .slide-enter-active,.slide-leave-active{
     transition:all 0.3s
   }
-  .slide-enter,.slide-leave-to {
+  .slide-enter,.slide-leave-to{
     transform:translate3d(100%,0,0);
   }
 </style>

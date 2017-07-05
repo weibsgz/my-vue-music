@@ -4,7 +4,7 @@
 import * as types from './mutation-types'
 import {shuffle} from 'common/js/util'
 import {playMode} from 'common/js/config'
-import {saveSearch} from 'common/js/cache'
+import {saveSearch,deleteSearch,clearSearch} from 'common/js/cache'
 
 
 //两个参数：第一个参数是:解构为commit方法,state 这应该是一个固定写法
@@ -99,3 +99,11 @@ export const saveSearchHistory = function ({commit, state}, query){
 }
 
 
+export const deleteSearchHistory = function ({commit,state},query){
+  commit(types.SET_SEARCH_HISTORY,deleteSearch(query))
+}
+
+
+export const clearSearchHistory = function ({commit}) {
+  commit(types.SET_SEARCH_HISTORY, clearSearch())
+}

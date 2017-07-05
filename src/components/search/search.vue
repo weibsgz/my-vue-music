@@ -3,21 +3,33 @@
     <div class="search-box-wrapper">
         <SearchBox ref="searchBox" @query = 'onQueryChange'></SearchBox>
     </div>
-    <div class="shortcut-wrapper" v-show="!query">
-        <div class="shortcut">
-            <div class="hot-key">
-                <h1 class="title">热门搜索</h1>
-                <ul>
-                    <li @click="addQuery(item.k)" class="item" v-for="(item,index) in hotkey">
-                        <span>{{item.k}}</span>
-                    </li>
-                </ul>
+    <div ref="shortcutWrapper" class="shortcut-wrapper" v-show="!query">
+        <Scroll ref="shortcut" class="shortcut" :data="shortcut">
+            <div>
+                <div class="hot-key">
+                    <h1 class="title">热门搜索</h1>
+                    <ul>
+                        <li @click="addQuery(item.k)" class="item" v-for="(item,index) in hotkey">
+                            <span>{{item.k}}</span>
+                        </li>
+                    </ul>
+                </div>
+                 <div class="search-history" v-show="searchHistory.length">
+                    <h1 class="title">
+                      <span class="text">搜索历史</span>
+                      <span @click="showConfirm" class="clear">
+                        <i class="icon-clear"></i>
+                      </span>
+                    </h1>
+                    <search-list @delete="deleteOne" @select="addQuery" :searches="searchHistory"></search-list>
+                </div>
             </div>
-        </div>        
+        </Scroll>        
     </div>    
-    <div class="search-result" v-show="query">
+    <div ref="searchResult" class="search-result" v-show="query">
             <Suggest :query='query' @listScroll="blurInput" @select="saveSearch"></Suggest>
     </div>
+    <Confirm ref="confirm" text="是否清空所有搜索历史" @confirm="clearSearchHistory"></Confirm>
     <router-view></router-view>
   </div>
 </template>
@@ -27,8 +39,13 @@
     import {getHotKey} from 'api/search'
     import {ERR_OK} from 'api/config'
     import Suggest from 'components/suggest/suggest'
-    import {mapActions} from 'vuex'
+    import {mapActions,mapGetters} from 'vuex'
+    import SearchList from 'base/search-list/search-list'
+    import Confirm from 'base/confirm/confirm'
+    import Scroll from 'base/scroll/scroll'
+    import {playlistMixin} from 'common/js/mixin'
     export default {
+        mixins:[playlistMixin],
         created(){
             this._getHotKey();
             let test = {a:1,b:2}
@@ -43,10 +60,37 @@
                 query:''
             }
         },
+        computed:{
+            ...mapGetters([
+                'searchHistory'
+            ]),
+            //scroll组件中包含了 hotKey 和 searchHistory 两个值绑定的内容，因为scroll组件需要
+            //绑定一个data 动态监测里边值变化 才能计算高度 ，所以将这俩值合并哪个改变都触发
+            shortcut(){
+                return this.hotkey.concat(this.searchHistory);
+            }
+        },
+        watch:{
+            query(newQuery){
+                //如果是从suggest组件切过来的 query 是一个从无到有的过程 
+                if(!newQuery){
+                    this.$refs.shortcut.refresh()
+                }
+            }
+        },
         methods:{    
             ...mapActions([
-                'saveSearchHistory'
-            ]),       
+                'saveSearchHistory',
+                'deleteSearchHistory',
+                'clearSearchHistory'
+            ]),   
+            handlePlaylist(playlist){
+                //处理滚动条底部遮挡  
+                 const bottom = playlist.length > 0 ? "60px" : " ";
+                  this.$refs.shortcutWrapper.style.bottom = bottom;
+                  this.$refs.searchResult.style.bottom = bottom;
+                  this.$refs.shortcut.refresh()
+            }, 
             _getHotKey(){
                 getHotKey().then((res) =>{
                     if(res.code === ERR_OK){
@@ -70,11 +114,21 @@
             saveSearch(){
                 //保存查找历史
                this.saveSearchHistory(this.query)
+            },
+            deleteOne(item){
+                this.deleteSearchHistory(item)
+            },
+            showConfirm(){
+                this.$refs.confirm.show()
+                //this.clearSearchHistory()
             }
         },
         components:{
             SearchBox,
-            Suggest
+            Suggest,
+            SearchList,
+            Confirm,
+            Scroll
         }
     }
 </script>
